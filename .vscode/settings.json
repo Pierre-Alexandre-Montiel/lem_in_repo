@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "my_lemin.h": "c",
+        "get_next_line.h": "c",
+        "types.h": "c"
+    }
+}
