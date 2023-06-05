@@ -14,12 +14,18 @@
 
 int pos;
 int nb;
+int len;
 
 typedef struct  s_matrix
 {
     int room_nums;
 	bool **m;
 }		            t_matrix;
+
+typedef struct  s_paths
+{
+    int** paths;
+}		            t_paths;
 
 typedef struct s_parsing
 {
@@ -60,14 +66,9 @@ typedef struct s_store
 int	ft_putstr(char *s);
 int	ft_strcmp(char *s1, char *s2);
 int ft_strlen(const char *str);
-void	*ft_memcpy(void *dst, const void *src, size_t n);
-char	*ft_strrchr(const char *str, int c);
-char	*ft_strrchr(const char *str, int c);
-size_t	ft_strlcpy(char *dst, const char *src, size_t n);
-size_t	word_count(char const *s, char c);
-size_t	move_ptr(char const *s, size_t n, size_t *index, char c);
-char	*word_dup(const char *str, int size);
-char	**free_all(char **ptr, size_t count);
+int	ft_strlen_int(int *theString, int dest);
+int		count_word(const char *str, char c);
+char		*tab_malloc(const char *str, char c);
 char	**ft_split(char const *s, char c);
 t_matrix* create_matrix(int room_nums);
 void	print_matrix(t_matrix *g);
@@ -79,16 +80,30 @@ void printTree_path(t_p *tree);
 void print2D(t_node* root, int space);
 int isin(char *str, char c);
 int find_node(t_node* root, int key);
-void DFS(t_p **root, t_matrix *g , int src, int dest, bool *v, int *path, int pathLen);
-int nbpaths(t_p **root, t_matrix *g, int src, int dest, bool *v);
+void DFS(t_p **root, t_matrix *g , int src, int dest, bool *v, int *path, int pathLen, t_paths *p);
+int nbpaths(t_p **root, t_matrix *g, int src, int dest, bool *v, t_paths *p);
+void DFS_2(t_p **root, t_matrix *g , int src, int dest, bool *v, int *path, int pathLen, t_paths *p);
+int nbpaths_2(t_p **root, t_matrix *g, int src, int dest, bool *v, t_paths *p);
 void find_rooms(t_node *root, char **stock, int room_num);
-void find_links(t_p *rooms, t_matrix *g, char **stock);
-int fill_rooms_start(t_parsing *par, t_p **rooms, char **stock, int room_num);
-int fill_rooms(t_parsing *par, t_p **rooms, char **stock, int room_num);
+void find_links(t_p *rooms, t_matrix *g, t_store *store);
+int fill_rooms_start(t_parsing *par, t_p **rooms, t_store *store);
+int fill_rooms_end(t_parsing *par, t_p **rooms, t_store *store);
+int fill_rooms(t_parsing *par, t_p **rooms, t_store *store);
 int    print_map(char **stock);
 void    pars_init(t_parsing *par);
+void    paths_init(t_paths *p);
 void    init_room_val(t_p *rooms);
 void    storage(t_store **store);
 void addNode_store(t_store **tree, char *line);
 void print_store(t_store *store);
+int nb_ants(t_store *store, t_parsing *par);
+void deleteNode(t_store** head, t_store* nodeToDelete);
+int tab_len(char **tab);
+int nb_adj(t_matrix *g, int val);
+void all_shortest_paths(t_paths *p, int nb_ways, int size, int dest, t_p *sol);
+int shortest_path_index(t_paths *p, int nb_ways, int size, int dest);
+int ants_vs_paths(int ants, int nb_ways);
+char *find_room_name(t_p *root, int key);
+bool    path_comp(int *src1, int *src2, int dest);
+int already(int *src, int c, int dest);
 #endif

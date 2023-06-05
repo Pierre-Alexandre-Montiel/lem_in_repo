@@ -1,112 +1,210 @@
 #include "get_next_line.h"
+#include "my_lemin.h"
 
-static char			*ft_strdup(const char *s1)
+
+#include "get_next_line.h"
+
+char	*ft_strjoin(char const *s1, char const *s2)
 {
-	char		*s2;
-	size_t		i;
+	int		sizetotal;
+	char	*res;
+	int		i;
+	int		j;
 
 	i = 0;
-	while (s1[i])
-		i += 1;
-	if (!(s2 = (char *)malloc(sizeof(char) * (i + 1))))
+	sizetotal = ft_strlen(s1) + ft_strlen(s2);
+	res = malloc(sizeof(char) * (sizetotal + 1));
+	if (!res || !s1 || !s2)
 		return (NULL);
-	i = -1;
-	while (s1[++i])
-		s2[i] = s1[i];
-	s2[i] = '\0';
-	return (s2);
-}
-
-static char			*ft_strjoin(char const *s1, char const *s2)
-{
-	char		*s3;
-	char		*tmp_s3;
-	size_t		i;
-	size_t		j;
-
-	j = 0;
-	i = 0;
-	while (s1[i])
-		i += 1;
-	while (s2[j])
-		j += 1;
-	if (!s1 || !s2 || !(s3 = (char *)malloc(sizeof(char) * (i + j + 1))))
-		return (NULL);
-	tmp_s3 = s3;
-	while (*s1 != '\0')
-		*tmp_s3++ = *s1++;
-	while (*s2 != '\0')
-		*tmp_s3++ = *s2++;
-	*tmp_s3 = '\0';
-	return (s3);
-}
-
-static int			gnl_verify_line(char **stack, char **line)
-{
-	char			*tmp_stack;
-	char			*strchr_stack;
-	int				i;
-
-	i = 0;
-	strchr_stack = *stack;
-	while (strchr_stack[i] != '\n')
-		if (!strchr_stack[i++])
-			return (0);
-	tmp_stack = &strchr_stack[i];
-	*tmp_stack = '\0';
-	*line = ft_strdup(*stack);
-	*stack = ft_strdup(tmp_stack + 1);
-	return (1);
-}
-
-static	int			gnl_read_file(int fd, char *heap, char **stack, char **line)
-{
-	int				ret;
-	char			*tmp_stack;
-
-	while ((ret = read(fd, heap, BUFF_SIZE)) > 0)
+	while (s1[i] != 0)
 	{
-		heap[ret] = '\0';
-		if (*stack)
+		res[i] = s1[i];
+		i++;
+	}
+	j = 0;
+	while (s2[j] != 0)
+	{
+		res[i] = s2[j];
+		i++;
+		j++;
+	}
+	res[sizetotal] = 0;
+	return (res);
+}
+
+char	*ft_strchr(const char *string, int searchedChar )
+{
+	char	*str;
+
+	str = (char *)string;
+	while (*str != searchedChar && *str != 0)
+		str++;
+	if (*str == searchedChar)
+		return (str);
+	else
+		return (NULL);
+}
+
+void	ft_bzero(void *s, size_t n)
+{
+	char	*str;
+	size_t	i;
+
+	str = (char *)s;
+	i = 0;
+	while (i < n)
+	{
+		str[i] = '\0';
+		i++;
+	}
+}
+
+void	*ft_calloc(size_t elementCount, size_t elementSize)
+{
+	char	*res;
+
+	res = malloc(elementSize * elementCount);
+	if (!res)
+		return (NULL);
+	ft_bzero(res, elementSize * elementCount);
+	return (res);
+}
+
+int	ft_strlen(const char *theString)
+{
+	int	i;
+
+	i = 0;
+	while (theString[i])
+		i++;
+	return (i);
+}
+
+int	ft_strlen_int(int *theString, int dest)
+{
+	int	i = 0;
+	while (1)
+    {
+        if (theString[i] == dest)
 		{
-			tmp_stack = *stack;
-			*stack = ft_strjoin(tmp_stack, heap);
-			free(tmp_stack);
-			tmp_stack = NULL;
+			i++;
+            break;
 		}
-		else
-			*stack = ft_strdup(heap);
-		if (gnl_verify_line(stack, line))
+        i++;
+    }
+	return (i);
+}
+
+// join and free
+char	*ft_free(char *buffer, char *buf)
+{
+	char	*temp;
+
+	temp = ft_strjoin(buffer, buf);
+	free(buffer);
+	return (temp);
+}
+
+// delete line find
+char	*ft_next(char *buffer)
+{
+	int		i;
+	int		j;
+	char	*line;
+
+	i = 0;
+	// find len of first line
+	while (buffer[i] && buffer[i] != '\n')
+		i++;
+	// if eol == \0 return NULL
+	if (!buffer[i])
+	{
+		free(buffer);
+		return (NULL);
+	}
+	// len of file - len of firstline + 1
+	line = ft_calloc((ft_strlen(buffer) - i + 1), sizeof(char));
+	i++;
+	j = 0;
+	// line == buffer
+	while (buffer[i])
+		line[j++] = buffer[i++];
+	free(buffer);
+	return (line);
+}
+
+// take line for return
+char	*ft_line(char *buffer)
+{
+	char	*line;
+	int		i;
+
+	i = 0;
+	// if no line return NULL
+	if (!buffer[i])
+		return (NULL);
+	// go to the eol
+	while (buffer[i] && buffer[i] != '\n')
+		i++;
+	// malloc to eol
+	line = ft_calloc(i + 2, sizeof(char));
+	i = 0;
+	// line = buffer
+	while (buffer[i] && buffer[i] != '\n')
+	{
+		line[i] = buffer[i];
+		i++;
+	}
+	// if eol is \0 or \n, replace eol by \n
+	if (buffer[i] && buffer[i] == '\n')
+		line[i++] = '\n';
+	return (line);
+}
+
+char	*read_file(int fd, char *res)
+{
+	char	*buffer;
+	int		byte_read;
+
+	// malloc if res dont exist
+	if (!res)
+		res = ft_calloc(1, 1);
+	// malloc buffer
+	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	byte_read = 1;
+	while (byte_read > 0)
+	{
+		// while not eof read
+		byte_read = read(fd, buffer, BUFFER_SIZE);
+		if (byte_read == -1)
+		{
+			free(buffer);
+			return (NULL);
+		}
+		// 0 to end for leak
+		buffer[byte_read] = 0;
+		// join and free
+		res = ft_free(res, buffer);
+		// quit if \n find
+		if (ft_strchr(buffer, '\n'))
 			break ;
 	}
-	return (RET_VALUE(ret));
+	free(buffer);
+	return (res);
 }
 
-int					get_next_line(int const fd, char **line)
+char	*get_next_line(int fd)
 {
-	static char		*stack[MAX_FD];
-	char			*heap;
-	int				ret;
-	int				i;
+	static char	*buffer;
+	char		*line;
 
-	if (!line || (fd < 0 || fd >= MAX_FD) || (read(fd, stack[fd], 0) < 0) \
-		|| !(heap = (char *)malloc(sizeof(char) * BUFF_SIZE + 1)))
-		return (-1);
-	if (stack[fd])
-		if (gnl_verify_line(&stack[fd], line))
-			return (1);
-	i = 0;
-	while (i < BUFF_SIZE)
-		heap[i++] = '\0';
-	ret = gnl_read_file(fd, heap, &stack[fd], line);
-	free(heap);
-	if (ret != 0 || stack[fd] == NULL || stack[fd][0] == '\0')
-	{
-		if (!ret && *line)
-			*line = NULL;
-		return (ret);
-	}
-	*line = stack[fd];
-	stack[fd] = NULL;
-	return (1);
+	// error handling
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+		return (NULL);
+	buffer = read_file(fd, buffer);
+	if (!buffer)
+		return (NULL);
+	line = ft_line(buffer);
+	buffer = ft_next(buffer);
+	return (line);
 }

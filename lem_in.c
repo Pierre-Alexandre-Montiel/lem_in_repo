@@ -3,53 +3,80 @@
 
 int main()
 {
-    //char buffer[1024];
-    //char **stock;
-    /*penser a initialiser tout les bool a false*/
+    //##### Init ########
+
 	t_parsing par;
     pars_init(&par);
     //t_node *root = NULL;
-    //t_p *path = NULL;
-   // t_p *rooms = NULL;
+    t_p *path = NULL;
+    t_p *rooms = NULL;
+    t_p *sol = NULL;
     t_store *store = NULL;
-    //int head;
+    t_paths all;
+    paths_init(&all);
+    len = 0;
+
+    //####### Parsing STDIN ########
     storage(&store);
-    print_store(store);
-   // head = read(STDIN_FILENO, buffer, 1024);
-    //printf("HEAD = %i\n", head);
-    //stock = ft_split(buffer, '\n');
-    //print_map(stock);
+    //print_store(store);
     printf("#########\n");
 	//gestion d'erreur input a prevoir
-    //int ants = stock[0][0] - '0';
-    //par.ants = true;
-	//int room_num = 0;
-    //room_num += fill_rooms_start(&par, &rooms, stock, room_num);
-    //room_num += fill_rooms(&par, &rooms, stock, room_num);
-    //init_room_val(rooms);
-    //printTree_path(rooms);
-    //printf("nb rooms = %i\n", room_num);
-    //find_start_end(&rooms, stock, room_num, "##start\n");
-    //printTree_path(rooms);
-    //find_start_end(root, stock, room_num, 's');
-    //find_start_end(root, stock, room_num, 'e');
-    //find_rooms(root, stock, room_num);
-    //printTree(root);
-    /*room_num--;
+    int ants = nb_ants(store, &par);
+    printf("ANTS = %i\n", ants);
+    int room_num = 0;
+    room_num += fill_rooms_start(&par, &rooms, store);
+    printf("#########\n");
+    room_num += fill_rooms_end(&par, &rooms, store);
+    printf("#########\n");
+    room_num += fill_rooms(&par, &rooms, store);
+    init_room_val(rooms);
+    //###### Neighboor matrice #######
 	t_matrix *g = create_matrix(room_num);
-    find_links(rooms, g, stock);
+    find_links(rooms, g, store);
 	print_matrix(g);
-	int p = find_node(root, 0);
-	printf("%i \n", p);
-	bool *visited = malloc(sizeof(bool) * room_num);
+    int dest = nb_adj(g, room_num - 1);
+    printf("RES = %i\n", dest);
+    printf("RoomNUM = %i\n", room_num);
+//	int p = find_node(root, 0);
+//	printf("%i \n", p);
+
+    //###### DFS #######
+    bool *visited = malloc(sizeof(bool) * room_num);
 	int res = 0;
-	res = nbpaths(&path, g, 0, 7, visited);
+	res = nbpaths(&path, g, 0, room_num - 1, visited, &all);
+    if (res <= 0)
+    {
+        exit(1);
+    }
+	printf("NB of paths = %i\n", res);
+    all.paths = (int **)malloc(sizeof(int*) * res + 1);
+	res = nbpaths_2(&path, g, 0, room_num - 1, visited, &all);
+    printf("[DEST] = %i\n", dest);
+    res = res / 2;
+    for (int i = 0; i < res; i++)
+    {
+        printf("strlen = %i \n", ft_strlen_int(all.paths[i], room_num - 1));
+        for (int j = 0; j < ft_strlen_int(all.paths[i], room_num - 1); j++)
+            printf("node -> %i ", all.paths[i][j]);
+        printf("\n");
+    }
+	printf("end\n");
 	printf("NB of paths = %i\n", res);
     //printf("path val = %i\n", path->val);
 	printf("#########\n");
-    printTree_path(path);
-    int nb_paths = ants / res;
-	printf("Rapport Ants / Rooms = %i\n", nb_paths);
-	printf("NB of paths = %i\n", res);*/
+    printTree_path(rooms);
+    //int nb_paths = ants / res;
+	//printf("Rapport Ants / Rooms = %i\n", nb_paths);
+	//printf("NB of paths = %i\n", res);
+
+    //####### Processing ########    
+    int p = ants_vs_paths(ants, dest);
+    printf("P = %i\n", p);
+    all_shortest_paths(&all, dest, res, room_num - 1, sol);
+    //####### Print Output #######
+    char *test = find_room_name(rooms, 2);
+    printf("Room Name = %s\n", test);
+    for (int i = 0; i < p; i++)
+        printf("solutions = %i\n", solve[i]);
     return (0);
 }

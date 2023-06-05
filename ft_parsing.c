@@ -42,7 +42,10 @@ int    print_map(char **stock)
 
 void	print_matrix(t_matrix *g)
 {
-	printf("  0 1 2 3 4 5 6 7\n");
+	printf("  0 ");
+    for (int i = 1; i < g->room_nums; i++)
+	    printf("%i ", i);
+	printf("\n");
 	for (int i = 0; i < g->room_nums; i++)
 	{
 		printf("%i ", i);
@@ -56,7 +59,7 @@ void	print_matrix(t_matrix *g)
 
 bool add_link(t_matrix *g, int x, int y)
 {
-    printf("%i, %i\n", x, y);
+    //printf("%i, %i\n", x, y);
 	g->m[x][y] = true;
 	return true;
 }
@@ -83,7 +86,6 @@ void addNode(t_node **tree, int key, char x, char y, char pos)
             tmpTree = tmpTree->right;
             if(!tmpTree)
             {
-                printf("Hello\n");
                 tmpNode->right = elem;
             }
         }
@@ -92,7 +94,6 @@ void addNode(t_node **tree, int key, char x, char y, char pos)
             tmpTree = tmpTree->left;
             if(!tmpTree) 
             {
-                printf("IS\n");
                 tmpNode->left = elem;
             }
         }
@@ -104,22 +105,26 @@ void addNode(t_node **tree, int key, char x, char y, char pos)
 void addNode_path(t_p **tree, int key, char *room)
 {
     t_p *element = malloc(sizeof(t_p));
-    /*if(!element) 
-        return(NULL);*/     /* Si l'allocation a échoué. */
+    if(!element) 
+        exit(1);
     element->val = key;
     element->room = room;
     element->next = *tree;
     *tree = element;
+    element->prev = NULL;
 }
 
 void addNode_store(t_store **tree, char *line)
 {
-    printf("LINE = %s\n", line);
     t_store *element = malloc(sizeof(t_store));
     if(!element) 
-        exit(1);    /* Si l'allocation a échoué. */
+        exit(1); 
     element->line = line;
+    element->prev = NULL;
     element->next = *tree;
+    if (*tree != NULL) {
+        (*tree)->prev = element;
+    }
     *tree = element;
 }
 
@@ -149,10 +154,6 @@ void printTree(t_node *tree)
 
 void printTree_path(t_p *tree)
 {
-    /*if(!tree)
-    {
-        return;
-    }*/
     while (tree != NULL)
     {
         printf("val = %i\n", tree->val);
@@ -163,10 +164,6 @@ void printTree_path(t_p *tree)
 
 void print_store(t_store *store)
 {
-    /*if(!tree)
-    {
-        return;
-    }*/
     while (store != NULL)
     {
         printf("store = %s\n", store->line);
@@ -215,6 +212,19 @@ int find_node(t_node* root, int key)
     return pos;
 }
 
+char *find_room_name(t_p *root, int key)
+{
+    if (root == NULL)
+        return 0;
+    while (root->next != NULL)
+    {
+        if (root->val == key)
+            return root->room;
+        root = root->next;
+    }
+    return NULL;
+}
+
 void find_rooms(t_node *root, char **stock, int room_num)
 {
     int i = 1;
@@ -235,17 +245,31 @@ int find_val_room(t_p *rooms, char *str)
 {
     while (rooms != NULL)
     {            
-        printf("ROOM name = %s\n", rooms->room);
-        printf("STR = %s\n", str);
-        printf("strcmp = %i\n", ft_strcmp(str, rooms->room));
+        //printf("ROOM name = %s ", rooms->room);
+        //printf("ROOM name = %i\n", ft_strlen(rooms->room));
+        //printf("STR = %s ", str);
+        //printf("STR = %i\n", ft_strlen(str));
+       // printf("strcmp = %i\n", ft_strcmp(str, rooms->room));  
+        //int j = 0;
+       /* while (rooms->room[j] != '\0')
+        {
+            printf("room c = %c\n", rooms->room[j]);
+            j++;
+        }
+        j = 0;
+        while (str[j] != '\0')
+        {
+            printf("str c = %c\n", str[j]);
+            j++;
+        }*/
         if (ft_strcmp(str, rooms->room) == 0)
         {
-
+            //printf("VAL -> = %i\n", rooms->val);
             return rooms->val;
         }
         rooms = rooms->next;
     }
-    return 0;
+    return -1;
 }
 
 void    init_room_val(t_p *rooms)
@@ -260,24 +284,33 @@ void    init_room_val(t_p *rooms)
     }
 }
 
-void find_links(t_p *rooms, t_matrix *g, char **stock)
+void find_links(t_p *rooms, t_matrix *g, t_store *store)
 {
-    int i = 1;
-    while (stock[i] != NULL)
+    //int i = 1;
+    while (store != NULL)
 	{
-		if (isin(stock[i], '-') == 1)
+		if (isin(store->line, '-') == 1)
         {
-            char **tiret = ft_split(stock[i], '-');
-            printf("tiret0 = %s\n", tiret[0]);
-            printf("tiret1 = %s\n", tiret[1]);
+            //printf("LINE -> %s\n", store->line);
+            char **tiret = ft_split(store->line, '-');
+          
+           // printf("tiret0 = %s\n", tiret[0]);
+           // printf("tiret1 = %s\n", tiret[1]);
             int x = find_val_room(rooms, tiret[0]);
             int y = find_val_room(rooms, tiret[1]);
-            printf("x = %i\n", x);
-            printf("y = %i\n", y);
-			add_link(g, x, y);
-			add_link(g, y, x);
+            //printf("x = %i\n", x);
+            //printf("y = %i\n", y);
+
+           // printf("%i, %i\n", x, y);
+            if (x >= 0 && y >= 0)
+            {
+            //    printf("ADD\n");
+			    add_link(g, x, y);
+			    add_link(g, y, x);
+            }
         }
-		i++;
+		//i++;
+        store = store->next;
 	}
 }
 
@@ -290,68 +323,250 @@ void    pars_init(t_parsing *par)
     par->empty = false;
 }
 
-int fill_rooms_start(t_parsing *par, t_p **rooms, char **stock, int room_num)
+void    paths_init(t_paths *p)
 {
-    int i = 1;
-	while (stock[i] != NULL)
+    p->paths = NULL;
+}
+
+int fill_rooms_start(t_parsing *par, t_p **rooms, t_store *store)
+{
+    int room_num = 0;
+	while (store != NULL)
 	{
-		if (isin(stock[i], '-') == 0 && isin(stock[i], '#') == 1) 
+		if (isin(store->line, '-') == 0 && isin(store->line, '#') == 1) 
 		{
-            // faire un strcmp plutot 
-			if (isin(stock[i], 's') == 1)
+            //printf("START\n");
+            //printf("LINE = %s\n", store->line);
+            //printf("STRCMP = %i\n", ft_strcmp(store->line, "##start"));
+            //printf("line = %s\n", store->line);
+            //printf("len = %i\n", ft_strlen(store->line));
+            //printf("len 2 = %i\n", ft_strlen("##start\0"));
+            //for (int i = ft_strlen(store->line); i > 0; i--)
+            //    printf("line[i] = %c\n", store->line[i]);
+			if (ft_strcmp(store->line, "##start") == 0)
 			{
-				char **s = ft_split(stock[i + 1], ' ');
+				char **s = ft_split(store->prev->line, ' ');
 				addNode_path(rooms, 0, s[0]);
-				stock[i + 1] = "#";
-				room_num++;
-                par->start = true;
+                deleteNode(&store, store->prev);
+                deleteNode(&store, store);
+				room_num += 1;
+                par->start = true;   
+	            return room_num;
 			}
         }
-		i++;
+        store = store->next;
+		//i++;
 	}
 	return room_num;
 }
 
-int fill_rooms(t_parsing *par, t_p **rooms, char **stock, int room_num)
+int fill_rooms_end(t_parsing *par, t_p **rooms, t_store *store)
 {
-    int i = 1;
-	while (stock[i] != NULL)
+    int room_num = 0;
+	while (store != NULL)
 	{
-		if (isin(stock[i], '-') == 0 && isin(stock[i], '#') == 1) 
+		if (isin(store->line, '-') == 0 && isin(store->line, '#') == 1) 
 		{
-            // faire un strcmp plutot 
-            if (isin(stock[i], 'e') == 1)
+			if (isin(store->line, 'e') == 1)
 			{
-				char **s = ft_split(stock[i + 1], ' ');
+				char **s = ft_split(store->prev->line, ' ');
 				addNode_path(rooms, 1, s[0]);
-				stock[i + 1] = "#";
-				room_num++;
+                deleteNode(&store, store->prev);
+                deleteNode(&store, store);
+				room_num += 1;
                 par->end = true;
+	            return room_num;
 			}
         }
-        else if (isin(stock[i], '-') == 0 && isin(stock[i], '#') == 0)
+        store = store->next;
+		//i++;
+	}
+	return room_num;
+}
+
+void deleteNode(t_store** head, t_store* nodeToDelete)
+{
+    if (*head == NULL || nodeToDelete == NULL) {
+        return;
+    }
+
+    // Cas où le nœud à supprimer est la tête de liste
+    if (*head == nodeToDelete) {
+        *head = nodeToDelete->next;
+    }
+
+    // Rétablir les liens des nœuds adjacents
+    if (nodeToDelete->prev != NULL) {
+        nodeToDelete->prev->next = nodeToDelete->next;
+    }
+    if (nodeToDelete->next != NULL) {
+        nodeToDelete->next->prev = nodeToDelete->prev;
+    }
+    free(nodeToDelete);
+}
+
+int tab_len(char **tab)
+{
+    int i = 0;
+    while (tab[i] != NULL)
+        i++;
+    return i;
+}
+
+int fill_rooms(t_parsing *par, t_p **rooms, t_store *store)
+{
+    int room_num = 0;
+	while (store != NULL)
+	{
+        if (isin(store->line, '-') == 0 && isin(store->line, '#') == 0)
         {
-            char **tmp = ft_split(stock[i], ' ');
-			addNode_path(rooms, 1, tmp[0]);
-		    room_num++;
-            par->rooms = true;
+            char **tmp = ft_split(store->line, ' ');
+            if (tab_len(tmp) == 3)
+            {
+			    addNode_path(rooms, 1, tmp[0]);
+                //deleteNode(&store, store);
+		        room_num += 1;
+                par->rooms = true;
+            }
         }
-		i++;
+        store = store->next;
 	}
 	return room_num;
 }
 
 void storage(t_store **store)
 {
-    int i = 0;
-    int ret = 0;
-    char *buff;
     char *res;
-	while ((ret = get_next_line(STDIN_FILENO, &buff)) > 0)
-	{
-        res = buff;
-		addNode_store(store, res);
+	while ((res = get_next_line(STDIN_FILENO)))
+    {
+        char **tiret = ft_split(res, '\n');
+	    addNode_store(store, tiret[0]);
+    }
+}
+
+int nb_ants(t_store *store, t_parsing *par)
+{
+    int ants;
+
+    ants = 0;
+    /*while (store->next != NULL)
+    {
+        if (ft_strcmp(store->line, "##start") == 0)
+            break;
+        store = store->next;
+    }
+    store = store->next;*/
+    while (store != NULL)
+    {
+        //char **tmp = ft_split(store->line, ' ');
+        printf("LINE len = %i\n", ft_strlen(store->line));
+        printf("LINE = %s\n", store->line);
+        if (ft_strlen(store->line) == 1 && isin(store->line, '#') == 0)
+        {
+            ants = atoi(store->line);
+            deleteNode(&store, store);    
+            par->ants = true;
+            return ants;
+        }
+        store = store->next;
+    }
+    return ants;
+}
+
+int nb_adj(t_matrix *g, int val)
+{
+    int res;
+
+    res = 0;
+    for (int i = 0; i < g->room_nums; i++)
+    {
+        if (g->m[val][i] == 1)
+            res++;
+    }
+    return res;
+}
+
+
+int shortest_path_index(t_paths *p, int nb_ways, int size, int dest)
+{
+    int i;
+    int s;
+    int tmp;
+
+    i = 0;
+    s = 0;
+    printf("nb ways = %i\n", nb_ways);
+    tmp = ft_strlen_int(p->paths[0], dest);
+    while (i < size)
+    {
+        if (tmp > ft_strlen_int(p->paths[i], dest))
+            s = i;
         i++;
-		free(buff);
-	}
+    }
+    if (s > 0)
+        s -= 1;
+    return s;
+}
+
+int already(int *src, int c, int dest)
+{
+    int i= 0;
+    while (src[i] != dest)
+    {
+        if (src[i] == c)
+            return 1;
+        i++;
+    }
+    return 0;
+}
+
+bool    path_comp(int *src1, int *src2, int dest)
+{
+    int i = 0;
+    int j = 0;
+
+    while (src1[i] == src2[j])
+    {
+        j++;
+        i++;
+    }
+    while (src1[i] != dest)
+    {
+        if (already(src2, src1[i], dest) == 1)
+            return false;
+        i++;
+    }
+    return true;
+}
+
+void all_shortest_paths(t_paths *p, int nb_ways, int size, int dest, t_p *sol)
+{
+    int i;
+    int s;
+    int index;
+
+    i = 0;
+    s = 0;
+    index = 0;
+
+    s = shortest_path_index(p, nb_ways, size, dest);
+    while (i < size)
+    {
+        if (i != s)
+        {
+            bool res = path_comp(p->paths[i], p->paths[i + 1], dest);
+            if (res == true)
+            {
+                addNode_store
+            }
+        }
+        i++;
+    }
+}
+
+int ants_vs_paths(int ants, int nb_ways)
+{
+    if (ants % nb_ways == 0)
+        return ants;
+    return -1;
 }
